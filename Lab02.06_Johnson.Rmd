@@ -1,0 +1,78 @@
+---
+title: "get_random_points.R"
+output: html_document
+date: "2025-02-06"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+Part A - get_random_points
+```{r}
+GetRandomPoints <- function(n){
+ x <- runif(n, -1,1)
+y <- runif(n, -1,1)
+m <- matrix(c(x,y), nrow = n, ncol = 2)
+colnames(m) <- c("x","y")
+return(m)
+ }
+
+
+GetRandomPoints(5)
+
+```
+
+Part B - point_checker
+```{r}
+IsPointInCircle <- function(x,y){
+dist <- sqrt(x^2 + y^2)
+return(dist < 1)
+}
+
+IsPointInCircle(1,1)
+
+```
+
+Part C - pi_from_points
+```{r}
+CalculatePi <- function(points){
+counter <- 0
+n <- nrow(points)
+for (i in 1:n) {
+  if(IsPointInCircle(points[i,1],points[i,2])){
+    counter <- counter + 1
+  }
+}
+ ratio_of_areas <- counter/n
+pie <- (ratio_of_areas * 4)
+  return(pie)
+}
+CalculatePi(GetRandomPoints(23))
+
+
+
+```
+
+
+
+
+Part D - plot_pis
+```{r}
+num_point <- seq(1,10000, by = 50)
+pi_estimates <- rep(NA,length(num_point))
+
+for(i in 1:length(num_point)){
+  m <- GetRandomPoints(num_point[i])
+  pi_estimates[i] <- CalculatePi(m)
+}
+finalplot <- plot(num_point, pi_estimates,
+                  xlab = "n", ylab = "Pi estimate",
+                  pch = 19, cex = 0.7)
+abline(h = 3.14159265358979323846, lty = 3, col = "gray")
+
+```
+
+
+
