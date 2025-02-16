@@ -1,0 +1,94 @@
+---
+title: "Johnson_Assignment12"
+output: html_document
+date: "2025-02-12"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Question 1
+- probability 
+  - A measure of the likelihood that an event will occur
+- simple event
+  - A single experiment and has a single outcome
+- complex event
+  - One event made of a series of simple events leading to a final outcome
+- shared event
+  - The simultaneous occurrence of simple events - the product of the probabilities of it's constitutive simple events 
+- conditional probability
+  - The probability of one outcome *conditional* on another event
+- statistical independence
+  - Events occurring independently of other outcomes.
+
+
+# Question 2 
+```{r}
+#2a
+0.5 * (1/6)
+
+#2b
+(4/6) * (1/2)
+
+#2c
+(5/6) * 1
+
+#2d
+6 * (1/6 * 1/2)
+
+```
+
+
+# Question 3
+
+- Probability of outcome B is 1 - (p(A)) = 0.8
+  - probability of NOT A is 80%
+
+
+# Question 4
+```{r}
+Bday <- function(nPeople, replicates = 10000){
+pBday <- 0 #sets an internal counter to 0
+  for (i in 1:replicates){ # repeats the following sequence for the number of replicates
+    
+  roomSamp <- sample(1:365, nPeople, replace = TRUE) #Generates a vector of randomly sampled numbers between 1:365, each representing a day of the year
+  unique <- duplicated(roomSamp) # Creates a new vector of booleans, if a number had already been listed, it returns true
+shared <- sum(unique == FALSE) #Creates an object equal to the sum of false values in the *unique* object vector
+
+if (length(roomSamp) != shared){ # if the there are any true values in the *unique* object vector, the initial vector length and the sum will not be equal. In this case it will add 1 to the counter 
+  pBday <- pBday + 1
+  }
+}
+return(pBday/replicates) # Divides the number of times there was a shared birthday by the number of replicates, outputting the percent of time there was a shared value OR the probability that, given the number of people, there will be a shared bday
+}
+
+#4b
+Bday(23) #Only 23 people reliably give a >50% chance there will be a shared birthday.
+
+
+
+#4c
+# We can use the same function adjusting the number of days in the intitial sample() function to reflect the number in a martian year - 687
+
+MarsBday <- function(nPeople, replicates = 10000){
+pBday <- 0 #sets an internal counter to 0
+  for (i in 1:replicates){ # repeats the following sequence for the number of replicates
+    
+  roomSamp <- sample(1:365, nPeople, replace = TRUE) #Generates a vector of randomly sampled numbers between 1:365, each representing a day of the year
+  unique <- duplicated(roomSamp) # Creates a new vector of booleans, if a number had already been listed, it returns true
+shared <- sum(unique == FALSE) #Creates an object equal to the sum of false values in the *unique* object vector
+
+if (length(roomSamp) != shared){ # if the there are any true values in the *unique* object vector, the initial vector length and the sum will not be equal. In this case it will add 1 to the counter 
+  pBday <- pBday + 1
+  }
+}
+return(pBday/replicates) # Divides the number of times there was a shared birthday by the number of replicates, outputting the percent of time there was a shared value OR the probability that, given the number of people, there will be a shared bday
+}
+MarsBday(23) # Shockingly, you need the same amount of people for there to be a >50% chance???
+
+```
+
+
+
+
