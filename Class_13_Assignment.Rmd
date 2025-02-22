@@ -1,0 +1,141 @@
+---
+title: "Intro to Probability 2: Assignment"
+author: "Spencer Johnson"
+output:
+  html_document: default
+  pdf_document: default
+language: R
+---
+<!-- To render the assignment in Rmarkdown, enter the command below in the R console -->
+<!-- rmarkdown::render("Class_13_Assignment.Rmd") -->
+
+Save this Rmarkdown script as a file named “YourlastName_Assignment13.Rmd”. 
+For each question, fill out the answer and, where requested, 
+provide the relevant R code using "```" and the echo = TRUE argument.
+
+When finished, Knit your script together into an html report, 
+saved as “YourlastName_Assignment13.html” and upload the 
+resulting file to Canvas to turn it in. 
+It is due before our next class.
+
+\
+
+**This homework assignment will test your abilities to:**
+
+1. think critically and creatively about probability
+
+2. use simulations to build intuition
+
+3. use your R skillz: function building, data visualization, etc.
+
+\
+
+### Question 1
+
+Define the following terms: 
+
+1a) random variable - A variable that is the result of a random event
+ 
+ 
+1b) probability distribution function - a rule or formula 
+that describes the probability of all possible outcomes of a random event
+ 
+
+
+### Question 2
+
+<div class="centered">
+$\Large {{n}\choose{k}}p^k (1-p)^{n-k}$
+</div>
+
+2a) Using your own words, break down the equation above and 
+
+- p - probabilities, n - the number of events in the sequence, k - the number of 'successes'  
+- The first part, n choose k calculates the number of possible sequences that satisfy the desired outcome.
+describe what each part means (or is doing). 
+- p^k calculates the probability of the specific number of successes k in the sequence.
+- (1-p)^n-k calculates the probability of **not** successes in the sequence using the opposite of the probability of success (1-p) to the number of **not** successes (n-k).
+
+
+2b) Using the function of this equation that you coded up in class, calculate the probability of 
+seeing 71 successes out of 531 trials, where the probability of success is 0.12345.
+
+```{r, echo = TRUE}
+prob <- function(n,k,p){
+return(choose(n,k)*p^k*(1-p)^(n-k))
+}
+
+prob(531, 71, 0.12345)
+```
+
+
+
+### Question 3
+
+
+
+December through March in the Northern Hemisphere will likely become a high covid prevalence season.
+Given the data below (taken from the [Washtenaw Covid Dashboard](https://www.washtenaw.org/3108/Cases)), 
+what is the probability that no one in the classroom has an active case of covid?
+\
+
+For the purposes of this calculation, assume the following:
+
+ - there are 20 people in our class\
+ - each of us can be treated as a random draw from Washtenaw County\
+ - there are ~375,000 people in Washtenaw County\
+ - over the last week, Washtenaw County has averaged about 29 new cases reported per day\
+ - someone infected with covid is infectious for 10 days\
+ - only 1 in every 10 covid infections is detected.\
+
+3a) What is the analytical probability that no one in our classroom 
+has an active covid infection?
+```{r, echo = TRUE}
+probCov <- 10 * (29/375000)
+probClass <- prob(20, 0, probCov)
+probClass
+```
+
+
+\
+
+3b) What is the probability at least one person in the room **_does_** have an active 
+covid infection
+```{r, echo = TRUE}
+probCov <- 10 * (29/375000)
+probClass <- prob(20, 0, probCov)
+1 - probClass
+```
+
+\
+
+3c) What is probability 2 people in the room are infected?
+```{r, echo = TRUE}
+probCov <- 10 * (29/375000)
+probTwoClass <- prob(20, 2, probCov)
+probTwoClass
+```
+
+\
+
+3d) Write a function for simulating this problem for gatherings of arbitrary size.
+The arguments of the function should be the number of people in the room 
+and the probability that a randomly selected person in the county has an active covid infection,
+and it should return the probability (from simulations), 
+that no one in the room has an active covid infection.
+Test it with the following class sizes: 10, 41, 100, 500. 
+
+```{r, echo = TRUE}
+partyCov <- function(n,probCov = (10 * (29/375000)) ){
+  k <- 1
+  prob <- choose(n,k)*probCov^k*(1-probCov)^(n-k)
+  return(prob)
+}
+
+partyCov(10)
+partyCov(41)
+partyCov(100)
+partyCov(500)
+```
+
+
