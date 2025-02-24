@@ -1,0 +1,138 @@
+---
+title: "Normal distribution"
+author: "Spencer Johnson"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  ioslides_presentation:
+    transition: 0.001
+    bigger: true
+    runtime: shiny
+---
+<!-- to run this shiny demo of the binomial distribution -->
+<!-- enter the following command into R's console:		 -->
+<!-- rmarkdown::run("binomial_shiny_demo.Rmd") 	 		 -->
+<!-- 											 		 -->
+<!-- more info at and lots of tutorials/resources 		 -->
+<!-- at http://shiny.rstudio.com/articles/#first-app	 -->
+
+
+***
+
+## Brief history {.build}
+
+ - First derived by James (aka Jacques?!) Bernoulli in 1713.
+ 
+ - Fun fact
+	+ James wanted the words "Although changed, I rise again the same" inscribed on his tombstone
+ 
+## Notation, parameters, bounds
+
+If a random variable $X$ is binomially distributed, we write 
+
+<div class="centered">
+$\Large X \sim B(n,p)$
+</div>
+
+\
+
+ - $n$ is the number of trials (e.g., the number of times you flip a coin)
+
+ - $p$ is the probability of success in each trial (e.g., the probability of flipping a heads)
+
+ - the binomial distribution is a **discrete** probability distribution
+ 
+ - a draw from a binomial distribution is bounded between 0 and $n$
+ 
+## Mean
+
+The mean of a binomial is given by 
+
+<div class="centered">
+$\Large \mathbb{E}[X] = np$
+</div> 
+
+\
+
+### Intuition:
+A larger number of trials will increase the overall expected number of successes (more flips = more heads).
+
+A higher probability of success ($p$) will increase the expected number of successes (higher chance of heads = more heads).
+
+When there are no trials ($n$ = 0), or when the probability of a success is 0 ($p$ = 0), 
+the mean is also 0.
+
+## Variance
+The variance is given by
+
+<div class="centered">
+$\Large \mathbb{V}ar(X) = np(1-p)$
+</div>
+
+\
+
+### Intuition:
+A larger number of trials increases the variance (more possible outcomes)
+
+Extreme values of $p$ give lower variances because outcomes start to get 
+squished up against the hard bounds of the distribution.
+
+When $p$ is 0 or 1, there is no variance, because all outcomes are failures or successes, respectively.
+
+## Things that are binomially distributed
+
+ - coin flips
+ 
+ - observations of disease
+ 
+ - wins/losses (e.g., in male/male competition)
+ 
+ - allele counts in a population
+
+##
+```{r, echo=FALSE}
+library(shiny)
+  # input and output definitions
+  # this is where you define the parameters of the distribution
+inputPanel(
+ # Input: Mean
+ numericInput("mean", "Mean:",
+             value = 0),
+ ## Input: Standard Deviation
+ numericInput("sd", "Standard Deviation:",
+             value = 1),
+ ## Input: number of observations
+ sliderInput("n", "number of observations:",
+             min = 1, max = 1000,
+             value = 50, step = 1),
+ sliderInput("b", "number of bins in plot:",
+ min = 1, max = 1000,
+ value = 50)
+)
+
+# this function determines how the output 
+# of the sliders is plotted
+renderPlot({
+  	# simulate data from the appropriately parameterized distribution
+    x <- rnorm(n = input$n, mean = input$mean, sd = input$sd)
+	# dynamically define a plot title that gives summaries of the data
+	plot.title <- sprintf("Histogram of binomial draws\nmean=%s ; np=%s",
+							round(mean(x),1),
+							input$n*input$p)
+
+
+# the next two lines are for creating the normal density curve which is overlaid on the histogram
+x2 <- seq(min(x), max(x), length = 40)
+fun <- dnorm(x2, mean = mean(x), sd = sd(x))
+							
+  	# visualize simulated data as a histogram
+    hist(x, col="darkblue", border = "white",
+         xlab = "Number of successes",
+         main = plot.title,
+         breaks=input$b, freq = FALSE)
+    lines(x2, fun, col = 2, lwd = 2)
+    abline(v=input$mean, col='red', lwd=3, lty='dashed')
+    abline(v=(input$mean + input$sd), col='black', lwd=1, lty='dashed')
+    abline(v=(input$mean - input$sd), col='black', lwd=1, lty='dashed')
+# ablines create the vertical lines that indicate standard deviation and mean. lines() adds the previously creating normal density curve.
+})
+```
