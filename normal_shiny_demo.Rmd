@@ -1,3 +1,89 @@
+---
+title: "Normal distribution"
+author: "Spencer Johnson"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  ioslides_presentation:
+    transition: 0.001
+    bigger: true
+    runtime: shiny
+---
+<!-- to run this shiny demo of the binomial distribution -->
+<!-- enter the following command into R's console:		 -->
+<!-- rmarkdown::run("binomial_shiny_demo.Rmd") 	 		 -->
+<!-- 											 		 -->
+<!-- more info at and lots of tutorials/resources 		 -->
+<!-- at http://shiny.rstudio.com/articles/#first-app	 -->
+
+
+***
+
+## Brief history {.build}
+
+ - The normal distribution was first introduced by Johann Carl Friedrich Gauss in 1823 among other things such as maximum likelihood and least squares methods.
+ 
+ - The normal distribution, as we know it, took many smart people to derive completely.
+ 
+## Notation, parameters, bounds
+
+If a random variable $X$ is normally distributed, we write 
+
+<div class="centered">
+$\Large X \sim N(\mu,\sigma^2 )$
+</div>
+
+\
+
+ - $\mu$ is the population mean (the expectation of the model)
+
+ - $\sigma^2$ represents the variance (how far the numbers are spread out)
+
+ - the normal distribution is a **continuous** probability distribution
+ 
+ - The probability of a random draw in a normal distribution is fixed based on the standard deviation
+ 
+## Mean
+
+The mean of a normal distribution is given by 
+
+<div class="centered">
+$\Large \mu = \frac{\Sigma^n x_{i}}{n}$
+</div> 
+
+\
+
+### Intuition:
+The mean is the average of all data points within the distribution, the center of the distribution.
+
+the central limit theorem says that as you increase sample size, then the sample mean will approach the population mean.
+
+With a small sample size the mean is more susceptible to change by extreme values.
+
+## Variance
+The variance is given by
+
+<div class="centered">
+$\sigma^2 = \displaystyle \frac{\Sigma(x_{i} - \overline{x})}{n-1}$
+</div>
+\
+
+### Intuition:
+variance is equal to the square root standard deviation or $\sqrt\sigma^2$
+
+A larger number of observations decreases the standard deviation - bigger sample size -> more normal
+
+In a normal distribution, 68% of the data falls within 1 standard deviation, 95% within 2, and 99.7% within 3 standard deviations of the mean.
+
+## Things that are normally distributed
+
+ - Many, many things - often used to gain an idea of the range of a population and compare observations to the population average.
+ 
+ - Body shape (height, birth weight, shoe size).
+ 
+ - Public health researchers use normal distributions to assist in determining 'normal' ranges for things like blood pressure, cholesterol levels, etc.
+ 
+
+##
 ```{r, echo=FALSE}
 library(shiny)
   # input and output definitions
