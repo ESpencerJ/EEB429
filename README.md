@@ -1,4 +1,5 @@
-## 
+# Assignments for class
+Written below are the assignment details for the individual assignments to provide context for the purpose of the code.
 
 ## Intro to Probability 1: Assignment
 Due by the beginning of class next Tuesday
