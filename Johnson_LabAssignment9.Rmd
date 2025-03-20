@@ -1,0 +1,90 @@
+---
+title: "Johnson_LabAssignment_9"
+author: "Spencer Johnson"
+date: "2025-03-20"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+# A. Practice using Bayes’ Theorem
+
+### 1 
+- p(S1) = 0.01
+- p(green|S2) = 0.05
+- p(S1|green) = X
+- p(green) =
+- p(S2) = 0.99
+- p(green|S1) = 0.9
+
+
+### 2.
+
+$p(S1|green) = \frac{P(green|S1) *P(S1)}{p(green)}$
+
+
+### 3.
+
+- p(green) = p(green|S1) * p(S1) + p(green|S2) * p(S2) = 0.0585
+
+
+### 4.
+
+$p(S1|green) = \frac{0.9 * 0.01}{0.0585} = 0.154$
+
+
+# B. Bayesian estimation of a distribution
+
+
+```{r}
+prior <- function(test_p){
+return(dbeta(test_p,0.5,0.5))
+}
+
+LogLikCoin <- function(test_data, test_p){
+k <- sum(test_data == 1)
+n <- length(test_data)
+return(log((test_p^k) * ((1-test_p)^(n-k))))
+}
+
+data <- sample(c(0,1),100,replace = TRUE)
+
+PosteriorEstimate <- function(data){
+  p_vals <- seq(0,1,by=0.001)
+  posP <- rep(NA, length(p_vals))
+for (i in 1:length(p_vals)) {
+   lik <- exp(LogLikCoin(data,p_vals[i]))
+   pri <- prior(p_vals[i])
+   posP[i] <- (lik * pri)
+  }
+  
+  plot(posP~p_vals)
+  return(p_vals[which.max(posP)])
+}
+
+PosteriorEstimate(data)
+```
+
+
+### 2.
+
+```{r}
+aliencoinflips <- c(0, 0, 1, 0, 0, 0, 1, 0, 0, 1,
+0, 0, 0, 1, 1, 0, 1, 0, 1, 0,
+0, 1, 0, 0, 0, 1, 0, 0, 1, 0,
+0, 0, 0, 1, 0, 1, 0, 0, 0, 0,
+0, 0, 0, 1, 0, 1, 0, 1, 0, 0,
+0, 1, 0, 0, 0, 1, 1, 0, 0, 0,
+0, 0, 0, 1, 0, 0, 0, 0, 0, 0,
+1, 0, 0, 0, 1, 0, 0, 0, 1, 1,
+0, 1, 1, 0, 0, 0, 0, 0, 0, 0,
+0, 0, 1, 1, 1, 1, 1, 0, 0, 0)
+
+PosteriorEstimate(aliencoinflips)
+
+```
+
