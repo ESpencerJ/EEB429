@@ -1,0 +1,131 @@
+---
+title: "Intro to Bayes: Assignment"
+output:
+  html_document: default
+  pdf_document: default
+language: R
+---
+
+<!-- To render the assignment in Rmarkdown, enter the command below in the R console -->
+<!-- rmarkdown::render("Class_17_Assignment.Rmd") -->
+
+
+Save this Rmarkdown script as a file named “YourlastName_Assignment17.Rmd”. 
+For each question, fill out the answer and, where requested, 
+provide the relevant R code using "```" and the echo = TRUE argument.
+
+When finished, Knit your script together into an html report, 
+saved as “YourlastName_Assignment17.html” and upload the 
+resulting file to the Canvas site (in today’s class folder) to turn it in. 
+It is due before our next class.
+
+\
+
+**This homework assignment will test your abilities to:**
+
+1. think critically and creatively about Bayesian statistics
+
+2. extrapolate from in-class exercises to apply Bayesian inference to arbitrary distributions
+
+3. use your R skillz: function building, data visualization, etc.
+
+\
+
+### Question 1
+
+1. Write down Bayes' Theorem using $D$ to denote "data" and $\theta$ to denote "the hypothesis"
+
+$p(\theta | D) = \frac{p(D | \theta) * p(\theta)}{p(D)}$
+
+2. Label the different components using the following list of concepts:
+	- the posterior probability of the hypothesis - $p(\theta | D)$
+	- the marginal likelihood of the data - $p(D)$
+	- the prior probability of the hypothesis - $p(\theta)$
+	- the likelihood of the data given the hypothesis - $p(D | \theta)$
+
+
+
+
+### Question 2
+
+Although a real time quantitative PCR (RT-qPCR) test is used most frequently 
+to diagnose a patient with SARS-CoV-2, this assay is slow, 
+expensive, has to be administered in a lab, and may incorrectly identify 
+a patient as infectious a large fraction of the time 
+(RT-qPCR is essentially **too** sensitive: 
+it can can detect viral DNA even after it is at such low titers 
+that the patient can longer infect others).
+
+Rapid antigen tests (RATs) are cheaper, faster, and have the potential to be administered at home.
+The Abbott PanBio RAT is one of the most commonly used commercial RAT.
+Abbott researchers know it has a 91.7% sensitivity and a 98.9% specificity. 
+On a whim, you get an Abbott PanBio RAT, which comes back positive. 
+Given that result, what is the probability you are actually infected with SARS-CoV-2?
+
+In your calculations, assume the following:\
+
+-There are ~375,000 people in Washtenaw County\
+-you can be treated as a random draw from Washtenaw County\
+-over the last few weeks, Washtenaw County has averaged about 34 cases per day\
+-someone infected with covid is infectious for 10 days\
+-only 1 in every 10 covid infections is detected.\
+
+
+prior: p(Covid) = p(a random Washtenaw County resident has covid) = (10 cases for every detected case * 10 days * 29 cases/day) / 375000 people in county = 0.008 chance of developing covid
+
+likelihood: p(PosRes | Covid) = 0.917
+
+marginal likelihood: p(PosRes) = p(Covid) * p(PosRes | Covid) + p(NoCovid) * p(PosRes | NoCovid)
+ - 0.008 * 0.917 + (1 - 0.008) * 0.011 = 0.018248
+
+posterior probability: $p(Covid | PosRes) = \frac{p(PosRes | Covid) * p(Covid)}{p(PosRes)} = 0.402$
+
+$p(\text{rona} \mid \text{positive result})$ = 0.402
+
+So there is only a 40.2% chance that, given your positive RAT result, you are actually infected with SARS-CoV-2.
+
+
+### Question 3
+
+3a) Building on the results from Question 2, 
+write an R function that explores how the probability you are actually infected with SARS-CoV-2 
+given a positive result from an Abbott PanBio RAT 
+is dependent on the number of infected people in Washtenaw County.
+The function should take as its arguments: \
+ -the percentage of people in Washtenaw County who are actively infected \
+ -the sensitivity of the Abbott RAT (from Question 2)\
+ -the specificity of the Abbott RAT (from Question 2)\
+ 
+and it should return the probability you are infected with SARS-CoV-2 given the positive test result.
+
+```{r}
+infect <- function(Cov=0.008, sens=0.917,spec=0.989){
+ pos <- Cov * sens + (1 - Cov) * (1 - spec)
+ return((sens * Cov)/pos)
+}
+
+```
+
+
+3b) plot the probability you are infected with SARS-CoV-2 given the positive test result over 
+a range of values of the percentage of people in Washtenaw County who are actively infected from 0 to 0.2.
+```{r}
+wash <- seq(0,0.2,by=0.01)
+plot((100 * wash), infect(wash),
+     xlab = "% of People w COVID",
+     ylab = "Prob you have COVID")
+```
+
+3c) At what background level of SARS-CoV-2 prevalence in Washtenaw County does 
+the probability of you actually being infected given your positive Abbott antigen test result go above 0.9?
+```{r}
+
+posterior_seq <- sapply(wash, infect)
+dmin_percent <- wash[which(posterior_seq > 0.9)[1]]
+min_percent
+
+```
+
+
+
+

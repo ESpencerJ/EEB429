@@ -1,0 +1,119 @@
+---
+title: "Intro to MCMC: Assignment"
+output:
+  html_document: default
+  pdf_document: default
+language: R
+---
+```{r}
+setwd("/Users/spencerjohnson/Desktop/School25/EEB429/homeworkspace")
+```
+
+<!-- To render the assignment in Rmarkdown, enter the command below in the R console -->
+<!-- rmarkdown::render("Class_20_Assignment.Rmd") -->
+
+Save this Rmarkdown script as a file named “YourlastName_Assignment20.Rmd”. 
+For each question, fill out the answer and, where requested, 
+provide the relevant R code using "```" and the echo = TRUE argument.
+
+When finished, Knit your script together into an html report, 
+saved as “YourlastName_Assignment22.html” and upload the 
+resulting file to Canvas to turn it in.
+
+\
+
+**This homework assignment will test your abilities to:**
+
+1. think critically and creatively about Bayesian inference
+
+2. extrapolate from in-class exercises to apply Bayesian inference to arbitrary distributions
+
+3. use your R skillz: function building, data visualization, etc.
+
+\
+
+### Question 1
+
+1. Explain, in your own words, the goal and steps of an MCMC algorithm.
+- An MCMC combines the ideas of a memoryless random process with repeated random sampling. This algorithm uses these ideas to find the distribution of the posterior probabilities. Because of how the algorithm determines it's next step, it will spend more time in areas of higher probability than in areas of low probability.
+
+### Question 2
+
+Below is a chunk of R code that implements an MCMC algorithm 
+to estimate the rate parameter ($\lambda$) of a Poisson distribution. 
+This code is uncommented - please write a comment for each line 
+explaining what that line is doing.
+
+```{r}
+calcPostProb <- function(poisData,lambda){#Create a function that calculates the log-likelihood of the some data (poisData) given lamba.
+	lnL <- sum(dpois(x=poisData,lambda=lambda,log=TRUE)) #Sum the results from a poisson probability density function.
+	lnPrior <- dnorm(x=lambda,mean=1,sd=1e6,log=TRUE) #Create a prior of lambda using the normal density function.
+	return(lnL + lnPrior)#Return the log posterior probability up to a constant.
+}
+
+mcmcPoisson <- function(poisData, nSteps){
+	lambdaSamples <- rep(NA,nSteps)
+	postProbSamples <- rep(NA,nSteps) #Create two empty vectors to store the values of lamba and posterior probability later.
+	lambda <- abs(rnorm(1)) #Define lambda with a randomly drawn positive value from a normal distribution.
+	postProb <- calcPostProb(poisData,lambda) #Creates an initial posterior probability with the data and previously defined lambda.
+	lambdaSamples[1] <- lambda
+	postProbSamples[1] <- postProb #Stores these inital values in the empty vectors
+	for(i in 1:nSteps){ # Initializes a for loop based on the number of steps defined in the function.
+		lambdaPrime <- lambda + rnorm(n=1,mean=0,sd=0.3) # proposes a new value for lambda using a randomly drawn number from a normal distribbution.
+		if(lambdaPrime >  0){ # runs the next section as long as the new proposed value is greater than 0
+			postProbPrime <- calcPostProb(poisData,lambdaPrime) # Calculates the posterior probability for the proposed lambda
+			postRatio <- exp(postProbPrime - postProb) # calculates the ratio between the new and old posterior probabilities. Putting it as an exponent to take it out of logarithm. 
+			if(postRatio > runif(n=1,min=0,max=1)){ #Runs the following chunk as long as the ratio is greater than a random draw from a normal distribution. (max of 1 so if the new prob is greater than the old, it will always run). Otherwise it will be accepted proportionally to the value of lambda.
+				lambda <- lambdaPrime
+				postProb <- postProbPrime # Accepts the proposed values of lambda and calculated post probability as the new values.
+			}
+		}
+		lambdaSamples[i] <- lambda
+		postProbSamples[i] <- postProb # Stores the current values (new if accepted, same as last iteration if new was rejected) in the empty vectors.
+	}
+	return(
+		list(
+			"lambdaSamples" = lambdaSamples,
+			"postProbSamples" = postProbSamples) # Returns all the values from the now populated vectors.
+	)
+}
+```
+
+
+### Question 3
+
+Use the code above to do inference on the rate parameter 
+I used to simulate the Poisson-distributed data saved in the 
+.Robj file linked from the Assignment on Canvas.
+```{r}
+load("/Users/spencerjohnson/Desktop/School25/EEB429/homeworkspace/poisData.Robj")
+steps <- mcmcPoisson(poisData, 1000)
+```
+
+Provide some visualizations of the results of your MCMC run.
+Minimally:
+
+a. A traceplot of the posterior probability
+```{r}
+pvals <- seq(0,1, length.out = 1000)
+plot(steps$postProbSamples, type = "l", 
+     xlab = "Iteration", 
+     main = "Trace Plot of posterior probability")
+```
+
+b. A traceplot of the posterior distribution of lambda
+```{r}
+plot(steps$lambdaSamples, type = "l", 
+     xlab = "Iteration", 
+     ylab = "lambda",
+     main = "Trace Plot of Lambda")
+```
+
+c. A histogram of the posterior distribution of lambda
+```{r}
+hist(steps$lambdaSamples, breaks = 100,
+     xlab = "posterior distribution of lambda",
+     main = "histogram of the posterior distribution of lambda")
+```
+
+
