@@ -1,0 +1,149 @@
+---
+title: "Model building: deterministic functions"
+output:
+  html_document: default
+  pdf_document: default
+language: R
+---
+
+<!-- To render the assignment in Rmarkdown, enter the command below in the R console -->
+<!-- rmarkdown::render("Class_22_Assignment.Rmd") -->
+
+#### Due by the beginning of next class
+
+Save this Rmarkdown script as a file named “YourlastName_Assignment22.Rmd”. 
+For each question, fill out the answer and, where requested, 
+provide the relevant R code using "```" and the echo = TRUE argument.
+
+When finished, Knit your script together into an html report, 
+saved as “YourlastName_Assignment22.html” and upload the 
+resulting file to Canvas to turn it in.
+
+\
+
+**This homework assignment will test your abilities to:**
+
+1. think critically and creatively about model building
+
+2. extrapolate from in-class exercises to simulate data and do inference with a linear model
+
+3. extrapolate from previous lecture materials to apply Bayes' Theorem to inference with a linear model
+
+4. hone your R skillz: function building, data visualization, etc.
+
+\
+
+### Question 1
+
+Explain in your own words what each of the terms in the equation below is, 
+as well as what the equation as a whole is describing.
+
+$Y_i \sim N(\mu_i=f(x_i),\sigma)$
+- $Y_i$
+  - Refers to the outcome of a specific individual
+- N()
+  - N refers to a normal distribution in this case but could be whatever distribution
+- $(\mu_i, sigma)$
+  - As a normal distribution, there are two primary parameters
+  - $\mu$ is the mean in this case represented by $f(x_i)$ The function is the slope function (y = mx + b) which checks the mean of the data at the specific location of the individual i.
+  - $\sigma$ is the standard deviation which stays consistent, whatever individual i, we're looking at.
+
+
+### Question 2
+
+1. Simulate a dataset of 1000 datapoints using a linear model 
+with Gaussian-distributed errors with the following parameter values:
+
+	- intercept = 12
+	- sigma = 10
+	- predictor effect size = -1.3
+
+You may generate values of the predictor variable however you wish.
+
+```{r}
+#Setup
+obs <- 1000
+int <- 12
+sig <- 10
+es <- -1.3
+
+### Generate data for the predictor variable
+x <- rnorm(obs, mean = 100, sd = 10) # Generate a dataset of random pulls between 1 and 100
+
+### simulate a response variable
+y <- int + es * x + rnorm(obs, mean = 0, sd = sig)
+
+df <- data.frame(x,y)
+
+```
+
+
+Make a plot of the predictor plotted against the response with a 
+line overlain showing the expected relationship.
+```{r}
+plot (x,y)
+abline(int, es,
+       col = "red", lty = "dotted")
+```
+
+
+
+### Question 3
+
+Use the function lm() to infer the parameter values used 
+to simulate these data.  Confirm your results by overlaying the 
+MLE parameter estimates on the real data (slope and intercept).
+```{r}
+mod1 <- lm(y ~ x,data=df)
+
+plot (x,y)
+abline(int, es,
+       col = "red", lty = "dotted", lwd = 2)
+abline(mod1$coefficients[1], mod1$coefficients[2],
+       col = "blue", lty = "dotted", lwd = 2)
+
+```
+
+
+
+### Question 4
+
+a) Calculate the numerator of Bayes' Theorem 
+for the dataset you simulated in Question 2 
+assuming the following:
+
+* intercept ($\alpha$) = 13
+* effect size ($\beta$) = -1
+* standard deviation ($\sigma$) = 11
+* $\alpha \sim N(0,1)$
+* $\beta \sim N(0,1)$
+* $\sigma \sim \text{Exp}(1)$
+
+[hint: don't forget about the log product rule]
+```{r}
+alpha <- 13
+beta <- -1
+sigma <- 11
+
+ln.L <- function(y,x,alpha,beta,sigma){
+lik <- sum(dnorm(y,mean=alpha + beta * x,sd=sigma,log=TRUE))
+  numerator <- lik + dnorm(alpha,0,1, log = TRUE) + dnorm(beta,0,1, log = TRUE) + dexp(sigma, rate = 1)
+  return(numerator)
+}
+
+
+
+ln.L(y,x,alpha,beta,sigma)
+```
+
+
+b) Do it again, but this time with a value for $\alpha$ of 12. Which value of $\alpha$ has a higher value for the numerator of Bayes Theorem?
+```{r}
+alpha <- 12
+beta <- -1
+sigma <- 11
+
+ln.L(y,x,alpha,beta,sigma)
+
+```
+
