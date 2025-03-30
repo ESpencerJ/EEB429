@@ -1,0 +1,182 @@
+---
+title: "Class_21_Assignment"
+author: "Spencer Johnson"
+date: "2025-03-30"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+################################
+################################
+# writing an MCMC together
+#	by our powers combined
+################################
+################################
+
+```{r}
+
+# set seed for reproducibility
+set.seed(14)
+
+# simulate some data
+#	for testing our MCMC
+load("/Users/spencerjohnson/Desktop/School25/EEB429/homeworkspace/stamenData.Robj")
+head(stamenData)
+str(stamenData)
+
+```
+
+
+- Use a binomial distribution since every group of five is like a sample with a possible 0-5 flowers w stamen
+- Creating a prior with a uniform distribution because I'm really not sure what a good prior should be - so I won't use a beta distribution
+
+
+################
+# function library
+################
+
+
+```{r}
+
+# calculate log likelihood of data
+#	summed across all observations
+calcLik <- function(data, size, prob){
+	lik <- sum(dbinom(x=data, size = size, prob = prob, log = TRUE))
+	return(lik)	
+}
+
+# calculate log prior belief
+#	(we don't have strong prior beliefs here)
+calcPrior <- function(prob){
+	prior <- dunif(x=prob,min=0,max=1,log=TRUE)
+	return(prior)	
+}
+
+# in log space, this is the sum of the likelihood & prior
+calcNumerator <- function(data,size, prob){
+	lik <- calcLik(data,size, prob)
+	prior <- calcPrior(prob)
+	numerator <- lik + prior
+	return(numerator)
+}
+
+# in log space, this is the difference of the numerator and demoninator
+calcRatio <- function(numerator1,numerator2){
+	ratio <- numerator1 - numerator2
+	return(ratio)
+}
+
+# because we're in log space, 
+#	 we have to take the exponent of R 
+#	(to get out of log-space)
+check2accept <- function(R){
+	accept <- FALSE
+	if(exp(R) > runif(n=1,min=0,max=1)){
+		accept <- TRUE
+	}
+	return(accept)
+}
+```
+
+
+################
+# Do the MCMC!
+################
+```{r}
+
+# start with some book-keeping
+#	(aka call your mother!)
+steps <- 5e3
+highprs <- rep(NA,steps)
+highpost <- rep(NA,steps)
+startProb <- runif(1,0,1)
+
+
+# initiate the chain for **High Elevation**
+pr <- startProb
+highprs[1] <- pr
+numBayes <- calcNumerator(data = stamenData$highElev, size = 5, prob = pr)
+highpost[1] <- numBayes
+
+for(i in 2:steps){
+	pr_prime <- pr + rnorm(1,mean=0,sd=0.1)
+	if(pr_prime > 0 & pr_prime < 1){
+		numBayes_prime <- calcNumerator(data = stamenData$highElev, size = 5, prob = pr_prime)
+		R <- calcRatio(numBayes_prime,numBayes)
+		if(check2accept(R)){
+			pr <- pr_prime
+			numBayes <- numBayes_prime
+		}
+	}
+	highprs[i] <- pr
+	highpost[i] <- numBayes
+}
+
+
+#######################
+
+lowprs <- rep(NA,steps)
+lowpost <- rep(NA,steps)
+
+
+# initiate the chain for **low Elevation**
+pr <- startProb
+lowprs[1] <- pr
+numBayes <- calcNumerator(data = stamenData$lowElev, size = 5, prob = pr)
+lowpost[1] <- numBayes
+
+for(i in 2:steps){
+  pr_prime <- pr + rnorm(1,mean=0,sd=0.1)
+  if(pr_prime > 0 & pr_prime < 1){
+    numBayes_prime <- calcNumerator(data = stamenData$lowElev, size = 5, prob = pr_prime)
+    R <- calcRatio(numBayes_prime,numBayes)
+    if(check2accept(R)){
+      pr <- pr_prime
+      numBayes <- numBayes_prime
+    }
+  }
+  lowprs[i] <- pr
+  lowpost[i] <- numBayes
+}
+
+
+par(mfrow=c(2,2))
+hist(highprs,
+     main = "High Elevation", xlab = "Probability")
+hist(lowprs,
+     main = "Low Elevation", xlab = "Probability")
+plot(highprs, highpost, 
+     xlab = "Probability", ylab = "Log Posterior Prob.",
+     main = "High Elevation")
+abline(v = highprs[which.max(highpost)],
+       lty = "dotted", col = "red")
+plot(lowprs, lowpost,
+     xlab = "Probability", ylab = "Log Posterior Prob.",
+     main = "Low Elevation")
+abline(v = lowprs[which.max(lowpost)],
+       lty = "dotted", col = "red")
+```
+
+
+################### Analysis################### 
+
+```{r}
+par(mfrow=c(1,2))
+plot(highprs, highpost, 
+     xlab = "Probability", ylab = "Log Posterior Prob.",
+     main = "High Elevation")
+abline(v = highprs[which.max(highpost)],
+       lty = "dotted", col = "red")
+plot(lowprs, lowpost,
+     xlab = "Probability", ylab = "Log Posterior Prob.",
+     main = "Low Elevation")
+abline(v = lowprs[which.max(lowpost)],
+       lty = "dotted", col = "red")
+```
+
+Based on this set of graphs, the probability of the low elevation and high elevation having stamens if very close. Since we're using the MCMC, I would conclude that there is a slight difference in probability but I would be interested in further analysis to see if the difference is statistically significant.
