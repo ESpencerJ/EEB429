@@ -1,0 +1,47 @@
+---
+title: "FFF"
+author: "Spencer Johnson"
+date: "2025-04-14"
+output: html_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#The scenario
+We’re interested in plant species distribution in the Amazon rainforest as agricultural practices fragment forest habitats into remnants of what they once were. Due to limited resources, we must prioritize fragments for conservation. Thus, we’re interested in whether it’s better to conserve many smaller fragments or few large fragments to protect the most biodiversity. Using area as a predictor, can we determine the number of species found within the area?  Our X variable (predictor) is forest area in m2, and our Y variable (response) is the number of species of plants. 
+
+
+# Data generation
+
+```{r}
+#Deterministic Function - power law
+powLaw <- function(a,b,x){
+  return((a * x^b))
+}
+
+#Inv Link function - exponent for the ln() link function.
+invLink <- function(z){
+  return(exp(z))
+}
+```
+
+```{r}
+a <- 2 
+b <- 0.15
+
+
+x <- runif(1000, min = 0, max = 120) #Max area of a fragment = 120 M^2
+y <- rpois(n = 1e3, lambda = invLink(powLaw(a,b,x)))
+
+Rgonauts <- data.frame("predictor" = x, "response" = y)
+
+
+plot(Rgonauts)
+
+
+write.csv(Rgonauts,"/Users/spencerjohnson/Desktop/School25/EEB429/Rgonauts.csv", row.names = FALSE)
+```
+
+
+
