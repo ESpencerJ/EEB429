@@ -1,0 +1,53 @@
+---
+title: "SBI"
+author: "Spencer Johnson"
+date: "2025-04-16"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r}
+data <- read.csv("/Users/spencerjohnson/Desktop/School25/EEB429/PoissonDartFrogs_data.csv")
+
+plot(data)
+```
+
+```{r}
+#Deterministic Function
+lin.detFunc<- function(a,b,x){
+    return(a + b*x)
+}
+
+invLink <- function(z){ #link = -1/z
+  return(-1/z)
+}
+
+lin.modDart <- mle2(data$response ~ dexp(rate = invLink(lin.detFunc(a, b, x = data$predictor))),
+                data = data, start=list("a"= -1,"b"= -4))
+
+lin.modDart@coef
+
+
+
+lin.darta<- lin.modDart@coef[1]
+lin.dartb<- lin.modDart@coef[2]
+
+```
+
+
+```{r}
+lin.filt <- sort(data$predictor)
+
+plot(data)
+lines(lin.filt, (1/invLink(lin.detfunc(lin.darta,lin.dartb,lin.filt))), col = "red", lwd = 2)
+  
+
+lin.residuals <- data$response - lin.detFunc(lin.darta,lin.dartb,lin.filt)
+hist(lin.residuals)
+
+```
